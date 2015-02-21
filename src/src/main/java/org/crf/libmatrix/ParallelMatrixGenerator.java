@@ -29,6 +29,9 @@ public class ParallelMatrixGenerator
 	 * */
 	@Override
 	public final ParallelMatrix generate(int height, int width) {
-		return new ParallelMatrix(height, width, super.generateRandom( height, width ));
+		double[][] matrix = new double[ height ][];
+		for(int i = 0; i < height; ++i)
+			matrix[i] = generateRandom( 1, width );
+		return new ParallelMatrix( height, width, matrix );
 	}
 }

@@ -21,6 +21,13 @@ import org.crf.libmatrix.core.Immutable;
 @ThreadSafe
 public class Matrix {
 
+/** ParallelMatrix support.. */
+	protected Matrix(int height, int width, double[] matrix, boolean isChecked) {
+		this.height = height;
+		this.width = width;
+		this.matrix = matrix;
+	}
+
 	/**
 	 * "Syntax sugar" for creating an NxN <code>Matrix</code>
 	 * */
@@ -54,7 +61,7 @@ public class Matrix {
 	 * @param width
 	 * @return a reference to the array constructed
 	 * */
-	private static final double[] identityFor(int height, int width) {
+	private static double[] identityFor(int height, int width) {
 		Constraints.forSize(height, width);
 
 		double[] matrix = new double[ width*height ];
@@ -73,7 +80,7 @@ public class Matrix {
 	 *         j-th column
 	 * @see {@link Matrix#indexOf(int, int)}
 	 * */
-	protected final void copy(double[] matrix) {
+	protected void copy(double[] matrix) {
 	    Constraints.forSize(height, width);
 		Constraints.forArrayLength(height, width, matrix);
 
@@ -115,7 +122,7 @@ public class Matrix {
 	 *         j-th column
 	 * @see {@link Matrix#indexOf(int, int)}
 	 * */
-	public final double get(int i, int j) {
+	public double get(int i, int j) {
 		return matrix[indexOf( i, j )];
 	}
 
@@ -145,7 +152,7 @@ public class Matrix {
 		Constraints.forAdd(this, rhs);
 		for(int i = 0; i < matrix.length; ++i)
 			matrix[i] = this.matrix[i] + rhs.matrix[i];
-		return new Matrix(this.height, this.width, matrix);
+		return new Matrix( this.height, this.width, matrix, false );
 	}
 
 	/**
@@ -162,7 +169,7 @@ public class Matrix {
 					matrix[i*rhs.width + j] += get(i, k) * rhs.get(k, j);
 			}
 		}
-		return new Matrix( height, rhs.width, matrix );
+		return new Matrix( height, rhs.width, matrix, false );
 	}
 
 	/**
@@ -197,7 +204,7 @@ public class Matrix {
 	 * @param array the array to create a hash code value for
 	 * @return a hash code value for the array
 	 */
-	protected final static int hashCode(double[] array) {
+	protected static int hashCode(double[] array) {
 		int prime = 31;
 		if (array == null)
 			return 0;
@@ -259,7 +266,7 @@ public class Matrix {
 		 * @throws {@link ArithmeticException} in case the array is larger than height*width
 		 * */
 		static final void forArrayLength(int height, int width, double[] array) {
-			if (array.length > height*width)
+			if (array == null || array.length > height*width)
 				throw new ArithmeticException("The length of the backing array must not exceed the overall size of the matrix.");
 		}
 
