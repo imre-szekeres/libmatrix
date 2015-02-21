@@ -24,8 +24,8 @@ public class MatrixGeneratorTestSuite {
 
 	@Parameters
 	public static final Collection<Object[]> generators() {
-//TODO: return Arrays.asList(new Object[][] {{ new MatrixGenerator() }, { new ParallelMatrixGenerator() }});
-		return Arrays.asList(new Object[][] {{ new MatrixGenerator() }});
+        return Arrays.asList(new Object[][] {{ new MatrixGenerator() }, { new ParallelMatrixGenerator() }});
+		//~ return Arrays.asList(new Object[][] {{ new MatrixGenerator() }});
 	}
 
 	@Test

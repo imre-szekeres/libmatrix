@@ -158,28 +158,8 @@ public class ParallelMatrix
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + height;
-		result = prime * result + ParallelMatrix.hashCode(this.matrix);
+		result = prime * result + Arrays.deepHashCode(this.matrix);
 		result = prime * result + width;
-		return result;
-	}
-
-	/**
-	 * Returns a hash code value for the array
-	 * @param array the array to create a hash code value for
-	 * @return a hash code value for the array
-	 */
-	protected static final int hashCode(double[][] array) {
-		int prime = 31;
-		if (array == null)
-			return 0;
-		int result = 1;
-		long temp;
-		for (int i = 0; i < array.length; ++i) {
-			for(int j = 0; j < array[i].length; ++j) {
-				temp = Double.doubleToLongBits(array[i][j]);
-				result = prime * result + (int) (temp ^ (temp >>> 32));
-			}
-		}
 		return result;
 	}
 
