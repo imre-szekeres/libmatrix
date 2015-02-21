@@ -1,0 +1,14 @@
+all
+clean
+clean-build
+clean-deploy
+clean-test
+compile
+compile-test
+force-all
+jar
+jar-only
+resolve
+run
+run-only
+test

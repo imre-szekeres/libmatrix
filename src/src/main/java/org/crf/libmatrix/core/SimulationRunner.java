@@ -6,13 +6,19 @@ package org.crf.libmatrix.core;
 import org.crf.libmatrix.core.LibraryConfiguration;
 import org.crf.libmatrix.simulations.Simulation;
 import org.crf.libmatrix.MatrixGenerator;
+import org.crf.libmatrix.ParallelMatrixGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.BufferedWriter;
 
+import java.util.Calendar;
 /**
  * 
  * @author Imre Szekeres
@@ -29,9 +35,50 @@ public class SimulationRunner {
 		new Simulation<MatrixGenerator>( MatrixGenerator.class,  singlethCsvFile).run();
 		System.out.println("end of Matrix multiplication simulations..");
 
-//      new Simulation<ParallelMatrixGenerator>( ParallelMatrixGenerator.class, outputFile2 ).run();
+		Path parallelCsvFile = pathOf( (Path) config.get(REPORTS_HOME), CSV_ROOT, "parallel.csv" );
+		System.out.println("Running ParallelMatrix multiplication simulations..");
+        new Simulation<ParallelMatrixGenerator>( ParallelMatrixGenerator.class, parallelCsvFile ).run();
 
-//      generateReports(outputFile1, outputFile2);
+        generateCsvReport( (Path) config.get(REPORTS_HOME), singlethCsvFile, parallelCsvFile );
+	}
+
+	private static final void generateCsvReport(final Path reportHome, final Path singlethCsv, final Path paralellCsv) 
+								throws Exception {
+        Calendar now = Calendar.getInstance();
+        String time =  String.format("%s.%s.%s", now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), now.get(Calendar.SECOND));
+		Path report = reportHome.resolve(String.format("%s/%s", CSV_ROOT, String.format(CSV_REPORT_FILE, time))).normalize();
+		try ( 
+            BufferedWriter reportWriter = Files.newBufferedWriter( report, 
+                                                                   StandardCharsets.UTF_8,
+                                                                   Simulation.OPEN_OPTIONS );
+            BufferedReader sReader = Files.newBufferedReader( singlethCsv );
+            BufferedReader pReader = Files.newBufferedReader( paralellCsv ) 
+		) {
+			String sLine, pLine;
+			sReader.readLine();
+			pReader.readLine();
+			writeHeader( reportWriter );
+			while( ((sLine = sReader.readLine())  != null) && 
+				   ((pLine = pReader.readLine())) != null) {
+				writeReportLine(reportWriter, sLine, pLine);
+			}
+		}
+	}
+
+	private static final void writeHeader(final BufferedWriter reportWriter) throws IOException {
+		reportWriter.write("size,sruntime,pruntime,speedup");
+		reportWriter.newLine();
+	}
+	
+	private static final void writeReportLine(final BufferedWriter reportWriter, final String sLine, final String pLine) throws Exception {
+		String[] sparts = sLine.split(",");
+		String[] pparts = pLine.split(",");
+		int size = Integer.parseInt( sparts[0] );
+		long sruntime = Long.parseLong( sparts[1] );
+		long pruntime = Long.parseLong( pparts[1] );
+		
+		reportWriter.write(String.format( "%s,%s,%s,%1.2g", size, sruntime, pruntime, (double) sruntime / pruntime ));
+		reportWriter.newLine();
 	}
 
 	/**
@@ -65,6 +112,7 @@ public class SimulationRunner {
 		return path.resolve( file );
 	}
 
+	public static final String CSV_REPORT_FILE = "report%s.csv";
 	public static final String REPORTS_HOME = "reports-home"; 
 	public static final String CSV_ROOT = "csv";
 }

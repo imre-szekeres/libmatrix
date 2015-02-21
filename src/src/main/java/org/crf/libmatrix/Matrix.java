@@ -197,7 +197,7 @@ public class Matrix {
 	 * @param array the array to create a hash code value for
 	 * @return a hash code value for the array
 	 */
-	private static int hashCode(double[] array) {
+	protected final static int hashCode(double[] array) {
 		int prime = 31;
 		if (array == null)
 			return 0;

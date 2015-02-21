@@ -38,7 +38,7 @@ public final class Simulation <T extends MatrixGenerator> {
 	public final void run() {
 		try (BufferedWriter writer = Files.newBufferedWriter( logFilePath, 
 				                                              StandardCharsets.UTF_8, 
-				                                              OPEN_OPTIONS.toArray(new OpenOption[0]) )) {
+				                                              OPEN_OPTIONS )) {
 			
 			runSimulation( writer );
 		} catch(final IOException e) {
@@ -88,13 +88,14 @@ public final class Simulation <T extends MatrixGenerator> {
 		return height + (height / 7); 
 	}
 
-	public static final List<OpenOption> OPEN_OPTIONS;
+	public static final OpenOption[] OPEN_OPTIONS;
 
 	static {
-		OPEN_OPTIONS = new ArrayList<>();
-		OPEN_OPTIONS.add( StandardOpenOption.CREATE );
-		OPEN_OPTIONS.add( StandardOpenOption.WRITE );
-		OPEN_OPTIONS.add( StandardOpenOption.TRUNCATE_EXISTING );
+		List<OpenOption> options = new ArrayList<>();
+		options.add( StandardOpenOption.CREATE );
+		options.add( StandardOpenOption.WRITE );
+		options.add( StandardOpenOption.TRUNCATE_EXISTING );
+		OPEN_OPTIONS = (OpenOption[]) options.toArray( new OpenOption[0] );
 	}
 
 	public static final double NANOS_TO_MILLIS = 1e-6;
