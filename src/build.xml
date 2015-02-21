@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<project name='libmatrix' basedir='.' default='all' 
+         xmlns:ivy='antlib:org.apache.ivy.ant' >
+
+	<property name='reports.home' value='../reports' />
+	<property name='run.args' value='--reports-home ${reports.home}' />
+
+<!-- project ~layout specific properties.. -->
+	<property name='src.dir' value='src/main/java' />
+	<property name='test.dir' value='src/test/java' /> 
+
+	<property name='build_root.dir' value='../build' />
+	<property name='build.dir' value='${build_root.dir}/classes/main' />
+	<property name='test_build.dir' value='${build_root.dir}/classes/test' />
+	<property name='deploy.dir' value='../deploy' />
+	<property name='lib.dir' value='lib' />
+	<property name='jar.dir' value='${deploy.dir}/lib' /> 
+
+<!-- Reports.. -->
+<!--<property name='reports.dir' value='reports' />
+	<property name='csv.dir' value='${reports.dir}/csv' />
+	<property name='xls.dir' value='${reports.dir}/xls' /> -->
+
+<!-- Jar specific properties.. -->
+	<property name='jar.name' value='${ant.project.name}.jar' />
+	<property name='jar.qname' value='${jar.dir}/${jar.name}' />
+	<property name='main-class' value='org.crf.libmatrix.core.SimulationRunner' />
+
+<!-- Paths  -->
+	<path id='application' location='${jar.qname}' />
+	<path id='junit.classpath'>
+		<pathelement location='${build.dir}' />
+		<pathelement location='${test_build.dir}' />
+		<path refid='default.classpath' />
+		<path refid='application' />
+	</path>
+
+<!-- Targets -->
+	<target name='clean-build'>
+		<delete dir="${build_root.dir}" />
+	</target>
+
+	<target name='clean-deploy' >
+		<delete dir='${jar.dir}' />
+	</target>
+
+	<target name='clean' depends='clean-deploy, clean-build' />
+
+	<target name='resolve' >
+		<!-- <mkdir dir='${lib.dir}' /> -->
+		<ivy:resolve /> <!-- ivy downloads the deps into the ivy cache under ~/.ivy2 .. -->
+		<!-- where all the downloadded artifacts lie.. -->
+		<ivy:cachepath pathid='default.classpath' /> <!-- but we would like to use them, so.. -->
+	</target>
+
+	<target name='compile' depends='resolve' >
+		<mkdir dir='${build.dir}' />
+		<javac srcdir='${src.dir}' 
+		       destdir='${build.dir}' 
+		       includeantruntime='false' 
+		       deprecation='on' >
+			<classpath refid='default.classpath' /> <!-- when compiling we append the ivy cache to the classpath.. -->
+		</javac>
+	</target>
+
+	<target name='jar-only' >
+		<mkdir dir='${jar.dir}' />
+		<jar destfile='${jar.qname}' basedir='${build.dir}' >
+			<manifest>
+				<attribute name='Main-Class' value='${main-class}' />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name='jar' depends='compile, jar-only' >
+	</target>
+
+	<target name='run-only' >
+		<java jar='${jar.qname}' fork='true' >
+			<arg line='${run.args}' />
+		</java>
+	</target>
+
+	<target name='run' depends='jar, run-only' >
+	</target>
+
+	<target name='compile-test' depends='resolve' >
+		<mkdir dir='${test_build.dir}' />
+		<javac srcdir='${test.dir}' 
+		       destdir='${test_build.dir}' 
+		       includeantruntime='false' 
+		       deprecation='on' >
+			<classpath refid='junit.classpath' />
+		</javac>
+	</target>
+
+	<target name='clean-test' >
+		<delete dir='${test_build.dir}' />
+	</target>
+
+	<target name='test' depends='compile, compile-test' >
+		<junit printsummary='yes' >
+			<classpath refid='junit.classpath' />
+
+			<formatter type='plain' usefile='false' />
+			<test name='org.crf.libmatrix.core.LibMatrixTestLayer' 
+			      haltonfailure='no' />
+		</junit>
+	</target>
+
+	<target name='all' depends='test, jar-only, run-only' />
+
+	<target name='force-all' depends='clean, all' />
+
+</project>
