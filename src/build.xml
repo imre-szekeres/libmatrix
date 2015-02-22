@@ -47,6 +47,10 @@
 
 	<target name='clean' depends='clean-deploy, clean-build' />
 
+	<target name='clean-reports'>
+		<delete dir='${reports.home}' />
+	</target>
+
 	<target name='resolve' >
 		<!-- <mkdir dir='${lib.dir}' /> -->
 		<ivy:resolve /> <!-- ivy downloads the deps into the ivy cache under ~/.ivy2 .. -->

@@ -34,8 +34,15 @@ public class ParallelMatrix
 		super( height, width, matrix );
 	}
 
+/** Unchecking Constructor.. */
+	private ParallelMatrix(int height, int width, double[] matrix, boolean isChecked) {
+		super( height, width, matrix, isChecked );
+	}
+
 	/**
-	 * 
+	 * @param rhs
+	 * @return the product of this {@link ParallelMatrix} and the one passed as rhs
+	 * @see {@link Matrix#multiply(Matrix)}
 	 * */
 	@Override
 	public final ParallelMatrix multiply(final Matrix rhs) {
@@ -59,7 +66,14 @@ public class ParallelMatrix
 	}	
 
 	/**
+	 * Waits for all the threads run in the <code>ExecutorService</code> instance used as a thread pool 
+	 * to finish their operations.
+	 * <p>
+	 * Waiting timeout is <code>Long.MAX_VALUE</code> nanoseconds long.
 	 * 
+	 * @param threadPool
+	 * @see {@link ExecutorService#shutdown()}
+	 * @see {@link ExecutorService#awaitTermination(long, TimeUnit)}
 	 * */
 	private static final void waitFor(ExecutorService threadPool) {
 		threadPool.shutdown();
@@ -143,5 +157,38 @@ public class ParallelMatrix
 		final int fromRow;
 		final int toRow;
 		private volatile double[] matrix;
+	}
+
+    /**
+     * 
+     * */
+	public static final class Generator 
+	                            extends Matrix.Generator {
+
+        public Generator( ) {
+			super( );
+		}
+
+		/**
+		 * @param height
+		 * @return a {@link ParallelMatrix} with a size of height*height
+		 * @see {@link Matrix.Generator#generate(int)}
+		 * */
+		@Override
+		public final ParallelMatrix generate(int height) {
+			return this.generate( height, height );
+		}
+
+        /**
+         * @param height
+         * @param width
+         * @return a {@link ParallelMatrix} with a size of height*width
+         * @see {@link Matrix.Generator#generate(int, int)}
+         * @see {@link Matrix.Generator#generateRandom(int, int)}
+         * */
+		@Override
+		public final ParallelMatrix generate(int height, int width) {
+            return new ParallelMatrix( height, width, super.generateRandom( height, width ), false );
+		}
 	}
 }

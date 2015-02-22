@@ -29,7 +29,6 @@ public class SimulationRunner {
 	public static final void main(final String[] args) throws Exception {
 		Map<String, Object> config = configOf( args );
 
-// TODO: meresek..
 		Path singlethCsvFile = pathOf( (Path) config.get(REPORTS_HOME), CSV_ROOT, "single-th.csv" );
 		System.out.println("Running Matrix multiplication simulations..");
 		new Simulation<MatrixGenerator>( MatrixGenerator.class,  singlethCsvFile).run();
@@ -45,7 +44,12 @@ public class SimulationRunner {
 	private static final void generateCsvReport(final Path reportHome, final Path singlethCsv, final Path paralellCsv) 
 								throws Exception {
         Calendar now = Calendar.getInstance();
-        String time =  String.format("%s.%s.%s", now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), now.get(Calendar.SECOND));
+        String time =  String.format("%s%s%s_%s.%s.%s", now.get(Calendar.YEAR),
+                                                        now.get(Calendar.MONTH),
+                                                        now.get(Calendar.DAY_OF_MONTH), 
+                                                        now.get(Calendar.HOUR_OF_DAY), 
+                                                        now.get(Calendar.MINUTE), 
+                                                        now.get(Calendar.SECOND));
 		Path report = reportHome.resolve(String.format("%s/%s", CSV_ROOT, String.format(CSV_REPORT_FILE, time))).normalize();
 		try ( 
             BufferedWriter reportWriter = Files.newBufferedWriter( report, 

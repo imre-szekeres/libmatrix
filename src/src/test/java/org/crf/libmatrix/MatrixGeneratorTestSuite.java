@@ -18,14 +18,13 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class MatrixGeneratorTestSuite {
 
-	public MatrixGeneratorTestSuite(final MatrixGenerator generator) {
+	public MatrixGeneratorTestSuite(final Matrix.Generator generator) {
 		this.generator = generator;
 	}
 
 	@Parameters
 	public static final Collection<Object[]> generators() {
-//TODO: return Arrays.asList(new Object[][] {{ new MatrixGenerator() }, { new ParallelMatrixGenerator() }});
-		return Arrays.asList(new Object[][] {{ new MatrixGenerator() }});
+		return Arrays.asList(new Object[][] {{ new Matrix.Generator() },{ new ParallelMatrix.Generator() }});
 	}
 
 	@Test
@@ -52,5 +51,5 @@ public class MatrixGeneratorTestSuite {
 
 	public static final int MAX_MATRIX_HEIGHT = 210;
 	public static final double BITS_TO_MBYTES = 1.0 / (1000000 * 8);
-	private final MatrixGenerator generator;
+	private final Matrix.Generator generator;
 }

@@ -2,6 +2,7 @@ all
 clean
 clean-build
 clean-deploy
+clean-reports
 clean-test
 compile
 compile-test

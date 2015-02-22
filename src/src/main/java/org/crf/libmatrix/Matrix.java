@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import org.crf.libmatrix.core.ThreadSafe;
 import org.crf.libmatrix.core.Immutable;
-
+import java.util.Random;
 
 /**
  * Represents an NxK Matrix, where
@@ -43,6 +43,13 @@ public class Matrix {
 		this.height = height;
 		this.width = width;
 		copy( matrix );
+	}
+
+/** Unchecking Constructor.. */
+	protected Matrix(int height, int width, double[] matrix, boolean isChecked) {
+		this.height = height;
+		this.width = width;
+		this.matrix = matrix;
 	}
 
 	/**
@@ -145,7 +152,7 @@ public class Matrix {
 		Constraints.forAdd(this, rhs);
 		for(int i = 0; i < matrix.length; ++i)
 			matrix[i] = this.matrix[i] + rhs.matrix[i];
-		return new Matrix(this.height, this.width, matrix);
+		return new Matrix( height, width, matrix, false );
 	}
 
 	/**
@@ -162,7 +169,7 @@ public class Matrix {
 					matrix[i*rhs.width + j] += get(i, k) * rhs.get(k, j);
 			}
 		}
-		return new Matrix( height, rhs.width, matrix );
+		return new Matrix( height, rhs.width, matrix, false );
 	}
 
 	/**
@@ -300,5 +307,43 @@ public class Matrix {
 			if (lhs.width != rhs.height)
 				throw new ArithmeticException("Matrix on the left handside must have the width same as the height of the one on the right handside.");
 		}
+	}
+
+	/**
+	 * */
+	public static class Generator {
+		
+		public Generator( ) {
+			this.random = new Random( System.nanoTime() );
+		}
+
+		/**
+		 * 
+		 * */
+		public Matrix generate(int height) {
+			return generate(height, height);
+		}
+
+		/**
+		 * 
+		 * */
+		public Matrix generate(int height, int width) {
+			return new Matrix( height, width, generateRandom( height, width ), false );
+		}
+
+		/**
+		 * 
+		 * */
+		protected final double[] generateRandom(int height, int width) {
+			Matrix.Constraints.forSize(height, width);
+			int size = height*width;
+			double[] matrix = new double[ size ];
+			for(int i = 0; i < size; ++i)
+				matrix[ i ] = random.nextDouble();
+			return matrix;
+		}
+
+
+		private final Random random;
 	}
 }
