@@ -5,8 +5,8 @@ package org.crf.libmatrix.core;
 
 import org.crf.libmatrix.core.LibraryConfiguration;
 import org.crf.libmatrix.simulations.Simulation;
-import org.crf.libmatrix.MatrixGenerator;
-import org.crf.libmatrix.ParallelMatrixGenerator;
+import org.crf.libmatrix.Matrix;
+import org.crf.libmatrix.ParallelMatrix;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,12 +31,12 @@ public class SimulationRunner {
 
 		Path singlethCsvFile = pathOf( (Path) config.get(REPORTS_HOME), CSV_ROOT, "single-th.csv" );
 		System.out.println("Running Matrix multiplication simulations..");
-		new Simulation<MatrixGenerator>( MatrixGenerator.class,  singlethCsvFile).run();
+		new Simulation<Matrix.Generator>( Matrix.Generator.class,  singlethCsvFile).run();
 		System.out.println("end of Matrix multiplication simulations..");
 
 		Path parallelCsvFile = pathOf( (Path) config.get(REPORTS_HOME), CSV_ROOT, "parallel.csv" );
 		System.out.println("Running ParallelMatrix multiplication simulations..");
-        new Simulation<ParallelMatrixGenerator>( ParallelMatrixGenerator.class, parallelCsvFile ).run();
+        new Simulation<ParallelMatrix.Generator>( ParallelMatrix.Generator.class, parallelCsvFile ).run();
 
         generateCsvReport( (Path) config.get(REPORTS_HOME), singlethCsvFile, parallelCsvFile );
 	}

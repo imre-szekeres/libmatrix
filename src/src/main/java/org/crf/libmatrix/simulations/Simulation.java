@@ -4,7 +4,6 @@
 package org.crf.libmatrix.simulations;
 
 import org.crf.libmatrix.Matrix;
-import org.crf.libmatrix.MatrixGenerator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,7 +21,7 @@ import java.util.List;
  * @author Imre Szekeres
  * @version "%I%, %G%"
  * */
-public final class Simulation <T extends MatrixGenerator> {
+public final class Simulation <T extends Matrix.Generator> {
 
 	public Simulation(final Class<T> clz, final Path logFilePath) throws InstantiationException, IllegalAccessException {
 		super( );
@@ -101,6 +100,6 @@ public final class Simulation <T extends MatrixGenerator> {
 	public static final double NANOS_TO_MILLIS = 1e-6;
 	public static final int START_HIGHT = 7;
 	public static final int MAX_HIGHT = 210;
-	private final MatrixGenerator generator;
+	private final Matrix.Generator generator;
 	private final Path logFilePath;
 }
