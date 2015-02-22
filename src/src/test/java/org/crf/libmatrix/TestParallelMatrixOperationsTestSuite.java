@@ -5,7 +5,6 @@ package org.crf.libmatrix;
 
 import org.crf.libmatrix.Matrix;
 import org.crf.libmatrix.ParallelMatrix;
-import org.crf.libmatrix.ParallelMatrixGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
