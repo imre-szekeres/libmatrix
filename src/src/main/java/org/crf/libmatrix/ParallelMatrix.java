@@ -52,7 +52,7 @@ public class ParallelMatrix
 		int poolSize = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue(); 
 		ExecutorService threadPool = Executors.newFixedThreadPool( poolSize );
 
-		int dRow = height/poolSize + 1;
+		/*final*/ int dRow = height/poolSize + 1;
 		for(int i = 0; i < height; i += dRow) {
 			dRow = (i + dRow) < height ? dRow : (height - i);
 			threadPool.execute(new LineMultiplier( this,
@@ -60,6 +60,24 @@ public class ParallelMatrix
 					                               i,
 					                               i + dRow,
 					                               matrix ));
+			//~ final int index = i;
+            //~ threadPool.execute(() -> {
+				//~ final int from = index;
+				//~ final int to = (index + dRow) < height ? dRow : (height - index);
+			//~ 
+				//~ //double[] values = new double[ to - from ];
+				//~ double value;
+				//~ for(int row = from; row < height; ++row) {
+					//~ for(int col = 0; col < rhs.width; ++col) {
+//~ 
+						//~ value = 0.0;
+						//~ for(int k = 0; k < width; ++k)
+							//~ value += get(row, col) * get(k, col);
+//~ 
+						//~ matrix[ row*rhs.width + col ] = value;
+					//~ }
+				//~ }
+			//~ });
 		}
 		waitFor( threadPool );
 		return new ParallelMatrix( height, rhs.width, matrix );
@@ -156,7 +174,7 @@ public class ParallelMatrix
 		final Matrix rhs;
 		final int fromRow;
 		final int toRow;
-		private double[] matrix;
+		private volatile double[] matrix;
 	}
 
     /**
