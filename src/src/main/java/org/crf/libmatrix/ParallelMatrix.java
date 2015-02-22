@@ -48,7 +48,7 @@ public class ParallelMatrix
 	public final ParallelMatrix multiply(final Matrix rhs) {
 		Matrix.Constraints.forMultiply(this, rhs);
 
-		double[] matrix = new double[ height*rhs.width ];
+		final double[] matrix = new double[ height*rhs.width ];
 		int poolSize = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue(); 
 		ExecutorService threadPool = Executors.newFixedThreadPool( poolSize );
 
@@ -156,7 +156,7 @@ public class ParallelMatrix
 		final Matrix rhs;
 		final int fromRow;
 		final int toRow;
-		private volatile double[] matrix;
+		private double[] matrix;
 	}
 
     /**
