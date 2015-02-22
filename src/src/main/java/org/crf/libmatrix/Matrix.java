@@ -61,7 +61,7 @@ public class Matrix {
 	 * @param width
 	 * @return a reference to the array constructed
 	 * */
-	private static final double[] identityFor(int height, int width) {
+	protected static final double[] identityFor(int height, int width) {
 		Constraints.forSize(height, width);
 
 		double[] matrix = new double[ width*height ];

@@ -3,7 +3,7 @@
          xmlns:ivy='antlib:org.apache.ivy.ant' >
 
 	<property name='reports.home' value='../reports' />
-	<property name='thread.count' value='6' /> 
+	<property name='thread.count' value='8' /> 
 	<property name='run.args' value='--reports-home ${reports.home} --mtx-thread-count ${thread.count} ' />
 
 <!-- project ~layout specific properties.. -->
@@ -46,10 +46,6 @@
 	</target>
 
 	<target name='clean' depends='clean-deploy, clean-build' />
-
-	<target name='clean-reports'>
-		<delete dir='${reports.home}' />
-	</target>
 
 	<target name='resolve' >
 		<!-- <mkdir dir='${lib.dir}' /> -->

@@ -3,6 +3,7 @@
  * */
 package org.crf.libmatrix.core;
 
+import java.io.InputStreamReader;
 import org.crf.libmatrix.core.LibraryConfiguration;
 import org.crf.libmatrix.simulations.Simulation;
 import org.crf.libmatrix.Matrix;
@@ -39,6 +40,14 @@ public class SimulationRunner {
         new Simulation<ParallelMatrix.Generator>( ParallelMatrix.Generator.class, parallelCsvFile ).run();
 
         generateCsvReport( (Path) config.get(REPORTS_HOME), singlethCsvFile, parallelCsvFile );
+	}
+
+	private static final void waitForInput() throws IOException {
+		// Waiting for JVisualVM to start..
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader( System.in ))) {
+			System.out.println("Press enter to continue..");
+			reader.readLine();
+		}
 	}
 
 	private static final void generateCsvReport(final Path reportHome, final Path singlethCsv, final Path paralellCsv) 

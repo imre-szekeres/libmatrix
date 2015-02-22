@@ -10,6 +10,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Imre Szekeres
@@ -19,24 +25,26 @@ public class ParallelMatrix
 				extends Matrix {
 
 	public ParallelMatrix(int height) {
-		super( height );
+		this( height, height );
 	}
 
 	public ParallelMatrix(int height, int width) {
-		super( height, width );
+		this( height, width, identityFor(height, width) );
 	}
 
 	public ParallelMatrix(int height, double[] matrix) {
-		super( height, matrix );
+		this( height, height, matrix );
 	}
 
 	public ParallelMatrix(int height, int width, double[] matrix) {
 		super( height, width, matrix );
+		this.deltaRow = height / POOL_SIZE + 1;
 	}
 
 /** Unchecking Constructor.. */
 	private ParallelMatrix(int height, int width, double[] matrix, boolean isChecked) {
 		super( height, width, matrix, isChecked );
+		this.deltaRow = height / POOL_SIZE + 1;
 	}
 
 	/**
@@ -47,19 +55,15 @@ public class ParallelMatrix
 	@Override
 	public final ParallelMatrix multiply(final Matrix rhs) {
 		Matrix.Constraints.forMultiply(this, rhs);
+		int dRow = deltaRow;
 
-		final double[] matrix = new double[ height*rhs.width ];
-		int poolSize = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue(); 
-		ExecutorService threadPool = Executors.newFixedThreadPool( poolSize );
-
-		/*final*/ int dRow = height/poolSize + 1;
+		List<LineMultiplier> threads = new ArrayList<>( POOL_SIZE );
 		for(int i = 0; i < height; i += dRow) {
 			dRow = (i + dRow) < height ? dRow : (height - i);
-			threadPool.execute(new LineMultiplier( this,
-					                               rhs, 
-					                               i,
-					                               i + dRow,
-					                               matrix ));
+			threads.add(new LineMultiplier( this,
+					                        rhs, 
+					                        i,
+					                        i + dRow ));
 			//~ final int index = i;
             //~ threadPool.execute(() -> {
 				//~ final int from = index;
@@ -79,27 +83,27 @@ public class ParallelMatrix
 				//~ }
 			//~ });
 		}
-		waitFor( threadPool );
-		return new ParallelMatrix( height, rhs.width, matrix );
-	}	
+		return new ParallelMatrix( height, rhs.width, invokeAll(this, rhs, threads), false );
+	}
 
 	/**
-	 * Waits for all the threads run in the <code>ExecutorService</code> instance used as a thread pool 
-	 * to finish their operations.
-	 * <p>
-	 * Waiting timeout is <code>Long.MAX_VALUE</code> nanoseconds long.
 	 * 
-	 * @param threadPool
-	 * @see {@link ExecutorService#shutdown()}
-	 * @see {@link ExecutorService#awaitTermination(long, TimeUnit)}
 	 * */
-	private static final void waitFor(ExecutorService threadPool) {
-		threadPool.shutdown();
+	private static final double[] invokeAll(final Matrix lhs, final Matrix rhs, Collection<? extends LineMultiplier> threads) {
 		try {
-			threadPool.awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
-		} catch(InterruptedException e) {
-// TODO: throw..
-			System.err.println("Execution timed out..");
+			List<Future<LineMultiplier.MatrixPart>> parts = THREAD_POOL.invokeAll( threads );
+			double[] matrix = new double[ lhs.height*rhs.width ];
+
+			for(Future<LineMultiplier.MatrixPart> part : parts) {
+				LineMultiplier.MatrixPart result = part.get();
+				System.arraycopy( result.matrixPart, 0,
+								  matrix, result.startIndex,
+								  result.matrixPart.length );
+			}
+			return matrix;
+		} catch(Exception e) {
+			System.err.println(String.format("ERROR: %s", e));
+			return null;
 		}
 	}
 
@@ -135,46 +139,56 @@ public class ParallelMatrix
 		return true;
 	}
 
+	private static final ExecutorService THREAD_POOL;
+	private static final int POOL_SIZE;
+	static {
+		POOL_SIZE = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue();
+		THREAD_POOL = Executors.newFixedThreadPool( POOL_SIZE );
+	}
+
+	private final int deltaRow;
+
 	/**
 	 * 
 	 * */
 	private static final class LineMultiplier 
-									implements Runnable {
+									implements Callable<LineMultiplier.MatrixPart> {
 		
 		LineMultiplier( final Matrix lhs, 
 				        final Matrix rhs,
 				        final int fromRow,
-				        final int toRow,
-				        double[] matrix ) {
+				        final int toRow ) {
 			this.lhs = lhs;
 			this.rhs = rhs;
 			this.fromRow = fromRow;
 			this.toRow = toRow;
-			this.matrix = matrix;
 		}
 
-		/**
-		 * 
-		 * */
 		@Override
-		public void run() {
-			double value;
-			for(int i = fromRow; i < toRow; ++i) {
-				for(int j = 0; j < rhs.width; ++j) {
-					value = 0.0;
+		public LineMultiplier.MatrixPart call() {
+			final double[] values = new double[ (toRow - fromRow)*rhs.width ];
+			for(int i = fromRow; i < toRow; ++i)
+				for(int j = 0; j < rhs.width; ++j)
 					for(int k = 0; k < lhs.width; ++k)
-						value += lhs.get(i, k)*rhs.get(k, j);
+						values[(i - fromRow)*rhs.width + j] += lhs.get(i, k)*rhs.get(k, j);
 
-					matrix[ i*rhs.width + j ] = value;
-				}
-			}
+			return new LineMultiplier.MatrixPart( fromRow*rhs.width, values );
 		}
 
 		final Matrix lhs;
 		final Matrix rhs;
 		final int fromRow;
 		final int toRow;
-		private volatile double[] matrix;
+
+		private static final class MatrixPart {
+
+			MatrixPart(final int startIndex, final double[] matrixPart) {
+				this.startIndex = startIndex;
+				this.matrixPart = matrixPart;
+			}
+			final int startIndex;
+			final double[] matrixPart;
+		}
 	}
 
     /**
