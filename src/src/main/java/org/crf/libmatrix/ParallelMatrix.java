@@ -49,10 +49,9 @@ public class ParallelMatrix
 		Matrix.Constraints.forMultiply(this, rhs);
 
 		double[] matrix = new double[ height*rhs.width ];
-		int poolSize = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue(); 
-		ExecutorService threadPool = Executors.newFixedThreadPool( poolSize );
+		ExecutorService threadPool = Executors.newFixedThreadPool( POOL_SIZE );
 
-		int dRow = height/poolSize + 1;
+		int dRow = height/POOL_SIZE + 1;
 		for(int i = 0; i < height; i += dRow) {
 			dRow = (i + dRow) < height ? dRow : (height - i);
 			threadPool.execute(new LineMultiplier( this,
@@ -157,6 +156,11 @@ public class ParallelMatrix
 		final int fromRow;
 		final int toRow;
 		private volatile double[] matrix;
+	}
+
+	private static final int POOL_SIZE;
+	static {
+		POOL_SIZE = ((Integer) LibraryConfiguration.get(LibraryConfiguration.MTX_THREAD_COUNT)).intValue();
 	}
 
     /**
