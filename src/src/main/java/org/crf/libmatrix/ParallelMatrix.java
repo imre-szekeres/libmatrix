@@ -9,7 +9,8 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Imre Szekeres
@@ -49,39 +50,29 @@ public class ParallelMatrix
 		Matrix.Constraints.forMultiply(this, rhs);
 
 		double[] matrix = new double[ height*rhs.width ];
-		ExecutorService threadPool = Executors.newFixedThreadPool( POOL_SIZE );
+		List<Thread> threadPool = new ArrayList<>( POOL_SIZE );
 
 		int dRow = height/POOL_SIZE + 1;
 		for(int i = 0; i < height; i += dRow) {
 			dRow = (i + dRow) < height ? dRow : (height - i);
-			threadPool.execute(new LineMultiplier( this,
-					                               rhs, 
-					                               i,
-					                               i + dRow,
-					                               matrix ));
-		}
+			threadPool.add(new Thread(new LineMultiplier( this,
+					                                      rhs, 
+					                                      i,
+					                                      i + dRow,
+					                                      matrix )));
+			threadPool.get(threadPool.size() - 1).start();
+		}		
 		waitFor( threadPool );
 		return new ParallelMatrix( height, rhs.width, matrix );
 	}	
 
 	/**
-	 * Waits for all the threads run in the <code>ExecutorService</code> instance used as a thread pool 
-	 * to finish their operations.
-	 * <p>
-	 * Waiting timeout is <code>Long.MAX_VALUE</code> nanoseconds long.
-	 * 
+	 * Waits for all the threads run in the thread pool to finish their operations.
 	 * @param threadPool
-	 * @see {@link ExecutorService#shutdown()}
-	 * @see {@link ExecutorService#awaitTermination(long, TimeUnit)}
 	 * */
-	private static final void waitFor(ExecutorService threadPool) {
-		threadPool.shutdown();
-		try {
-			threadPool.awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
-		} catch(InterruptedException e) {
-// TODO: throw..
-			System.err.println("Execution timed out..");
-		}
+	private static final void waitFor(List<? extends Thread> threadPool) {
+		for(Thread thread : threadPool)
+			try { thread.join(); } catch(final Exception e) {}
 	}
 
 	/**

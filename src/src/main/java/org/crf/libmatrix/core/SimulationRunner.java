@@ -116,7 +116,7 @@ public class SimulationRunner {
 		return path.resolve( file );
 	}
 
-	public static final String CSV_REPORT_FILE = "Mreport%s.csv";
+	public static final String CSV_REPORT_FILE = "NVreport%s.csv";
 	public static final String REPORTS_HOME = "reports-home"; 
 	public static final String CSV_ROOT = "csv";
 }
